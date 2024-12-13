@@ -2272,6 +2272,15 @@
               "label": "Third heading"
             }
           }
+        },
+        "frequently_bought_together": {
+          "settings": {
+            "name": "Frequently bought together",
+            "title": "Frequently bought together",
+            "product": {
+              "label": "Select a product to add to bundle"
+            }
+          }
         }
       },
       "settings": {
