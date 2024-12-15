@@ -15,74 +15,86 @@
 {{ 'section-product-bought-together.js' | asset_url | script_tag }}
 
 {%- liquid
+  assign show_section = ''
+
   if block.settings.title != blank
     assign title = block.settings.title
   endif
 
-  if block.settings.secondary_product
+  if product.metafields.frequently_bought_together.secondary_product != blank
+    assign secondary_product = product.metafields.frequently_bought_together.secondary_product.value
+  elsif block.settings.secondary_product != blank
     assign secondary_product = block.settings.secondary_product
+  else
+    assign show_section = false
   endif
 
   assign total_bundle_price = product.first_available_variant.price | plus: secondary_product.first_available_variant.price
 %}
 
-<bought-together class="sec-BoughtTogether">
-  {% if title %}
-    <h3>{{- title -}}</h3>
-  {% endif %}
+{% if show_section %}
+  <bought-together class="sec-BoughtTogether">
+    {% if title %}
+      <h3>{{- title -}}</h3>
+    {% endif %}
 
-  <div class="sec-BoughtTogether__inner">
-    <div class="sec-BoughtTogether__items">
-      <div class="sec-BoughtTogether__item">
-        <div class="sec-BoughtTogether__itemImage">
-          {{ product.featured_image | image_url: width: 240 | image_tag: class: 'sec-BoughtTogether__image' }}
+    <div class="sec-BoughtTogether__inner">
+      <div class="sec-BoughtTogether__items">
+        <div class="sec-BoughtTogether__item">
+          <div class="sec-BoughtTogether__itemImage">
+            {{ product.featured_image | image_url: width: 240 | image_tag: class: 'sec-BoughtTogether__image' }}
+          </div>
+          <div class="sec-BoughtTogether__itemContent">
+            <p class="sec-BoughtTogether__itemTitle">{{ product.title }}</p>
+            <p class="sec-BoughtTogether__itemPrice">{{ product.price | money }}</p>
+          </div>
         </div>
-        <div class="sec-BoughtTogether__itemContent">
-          <p class="sec-BoughtTogether__itemTitle">{{ product.title }}</p>
-          <p class="sec-BoughtTogether__itemPrice">{{ product.price | money }}</p>
+        <div class="sec-BoughtTogether__itemCenter">+</div>
+        <div class="sec-BoughtTogether__item">
+          <div class="sec-BoughtTogether__itemImage">
+            {{
+              secondary_product.featured_image
+              | image_url: width: 240
+              | image_tag: class: 'sec-BoughtTogether__image'
+            }}
+          </div>
+          <div class="sec-BoughtTogether__itemContent">
+            <p class="sec-BoughtTogether__itemTitle">{{ secondary_product.title }}</p>
+            <p class="sec-BoughtTogether__itemPrice">{{ secondary_product.price | money }}</p>
+          </div>
         </div>
       </div>
-      <div class="sec-BoughtTogether__itemCenter">+</div>
-      <div class="sec-BoughtTogether__item">
-        <div class="sec-BoughtTogether__itemImage">
-          {{ secondary_product.featured_image | image_url: width: 240 | image_tag: class: 'sec-BoughtTogether__image' }}
-        </div>
-        <div class="sec-BoughtTogether__itemContent">
-          <p class="sec-BoughtTogether__itemTitle">{{ secondary_product.title }}</p>
-          <p class="sec-BoughtTogether__itemPrice">{{ secondary_product.price | money }}</p>
-        </div>
+      <div class="sec-BoughtTogether__buttonWrapper">
+        <button
+          type="button"
+          name="add"
+          class="sec-BoughtTogether__submitButton product-form__submit button button--full-width button--secondary"
+          {% if product.selected_or_first_available_variant.available == false or quantity_rule_soldout %}
+            disabled
+          {% endif %}
+          data-primary-variant-id="{{ product.selected_or_first_available_variant.id }}"
+          data-secondary-variant-id="{{ secondary_product.first_available_variant.id }}"
+        >
+          <span>
+            {%- if product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
+              {{ 'products.product.sold_out' | t }}
+            {%- else -%}
+              {{ 'sections.product.frequently_bought_with.submit_button' | t }} - {{ total_bundle_price | money }}
+            {%- endif -%}
+          </span>
+          <div class="loading-overlay__spinner hidden">
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              class="spinner"
+              viewBox="0 0 66 66"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+            </svg>
+          </div>
+        </button>
       </div>
     </div>
-    <div class="sec-BoughtTogether__buttonWrapper">
-      <button
-        type="button"
-        name="add"
-        class="sec-BoughtTogether__submitButton product-form__submit button button--full-width button--secondary"
-        {% if product.selected_or_first_available_variant.available == false or quantity_rule_soldout %}
-          disabled
-        {% endif %}
-        data-primary-variant-id="{{ product.selected_or_first_available_variant.id }}"
-        data-secondary-variant-id="{{ secondary_product.first_available_variant.id }}"
-      >
-        <span>
-          {%- if product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
-            {{ 'products.product.sold_out' | t }}
-          {%- else -%}
-            {{ 'sections.product.frequently_bought_with.submit_button' | t }} - {{ total_bundle_price | money }}
-          {%- endif -%}
-        </span>
-        <div class="loading-overlay__spinner hidden">
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            class="spinner"
-            viewBox="0 0 66 66"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-          </svg>
-        </div>
-      </button>
-    </div>
-  </div>
-</bought-together>
+  </bought-together>
+{% endif %}
