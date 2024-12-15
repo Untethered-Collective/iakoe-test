@@ -60,7 +60,7 @@
           "type": "bought-together",
           "settings": {
             "title": "Frequently Bought Together",
-            "secondary_product": "{{ product.metafields.frequently_bought_together.secondary_product.value }}"
+            "secondary_product": "the-3p-fulfilled-snowboard"
           }
         }
       },
